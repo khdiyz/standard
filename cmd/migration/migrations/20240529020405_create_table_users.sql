@@ -1,5 +1,4 @@
--- +migrate Up
-
+-- +goose Up
 CREATE TABLE IF NOT EXISTS "users" (
     "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     "full_name" VARCHAR(64) NOT NULL,
@@ -10,6 +9,5 @@ CREATE TABLE IF NOT EXISTS "users" (
     "deleted_at" TIMESTAMP NULL
 );
 
--- +migrate Down
-
+-- +goose Down
 DROP TABLE IF EXISTS "users";

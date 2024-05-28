@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"flag"
 	"fmt"
 	"html/template"
@@ -13,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	migrate "github.com/rubenv/sql-migrate"
+	"github.com/pressly/goose/v3"
 	"github.com/sirupsen/logrus"
 )
 
@@ -42,47 +43,10 @@ func main() {
 	}
 	defer db.Close()
 
-	migrations := &migrate.FileMigrationSource{
-		Dir: dir,
-	}
-
 	command := args[0]
 	switch command {
-	case "up":
-		n, err := migrate.Exec(db.DB, "postgres", migrations, migrate.Up)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("Applied %d migrations!\n", n)
-	case "down":
-		n, err := migrate.ExecMax(db.DB, "postgres", migrations, migrate.Down, 1)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("Rolled back %d migrations!\n", n)
-	case "redo":
-		n, err := migrate.ExecMax(db.DB, "postgres", migrations, migrate.Down, 1)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("Rolled back %d migrations!\n", n)
-		n, err = migrate.ExecMax(db.DB, "postgres", migrations, migrate.Up, 1)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("Re-applied %d migrations!\n", n)
-	case "status":
-		records, err := migrate.GetMigrationRecords(db.DB, "postgres")
-		if err != nil {
-			log.Fatal(err)
-		}
-		if len(records) == 0 {
-			fmt.Println("No migrations applied!")
-			return
-		}
-		for _, record := range records {
-			fmt.Printf("Migration %s applied at %s\n", record.Id, record.AppliedAt)
-		}
+	case "up", "down", "redo", "status":
+		err = goose.RunContext(context.Background(), command, db.DB, dir, args...)
 	case "create":
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Print("Enter name of migration: ")
@@ -101,8 +65,12 @@ func main() {
 		}
 		fmt.Printf("Created new migration %s\n", name)
 	default:
-		flags.Usage()
+		err = goose.RunContext(context.Background(), "help", db.DB, dir, args...)
 	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 func usage() {
@@ -127,9 +95,9 @@ func createMigrationFile(name string) error {
 	}
 	defer file.Close()
 
-	templateContent := `-- +migrate Up
+	templateContent := `-- +goose Up
 
--- +migrate Down
+-- +goose Down
 
 `
 	tmpl, err := template.New("migration").Parse(templateContent)
