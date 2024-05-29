@@ -1,26 +1,20 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"flag"
 	"fmt"
-	"html/template"
 	"log"
 	"os"
-	"path/filepath"
 	"standard/pkg/constants"
 	"standard/pkg/utils"
-	"strings"
-	"time"
 
 	"github.com/pressly/goose/v3"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	dir        = "cmd/migration/migrations"
-	timeFormat = "20060102150405"
+	dir = "cmd/migration/migrations"
 )
 
 var (
@@ -47,23 +41,6 @@ func main() {
 	switch command {
 	case "up", "down", "redo", "status":
 		err = goose.RunContext(context.Background(), command, db.DB, dir, args...)
-	case "create":
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("Enter name of migration: ")
-		name, err := reader.ReadString('\n')
-		if err != nil {
-			log.Fatal(err)
-		}
-		name = strings.TrimSpace(name) // Remove any surrounding whitespace including newline characters
-		if name == "" {
-			fmt.Println("Please provide a name for the new migration")
-			return
-		}
-		err = createMigrationFile(name)
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("Created new migration %s\n", name)
 	default:
 		err = goose.RunContext(context.Background(), "help", db.DB, dir, args...)
 	}
@@ -82,28 +59,4 @@ func usage() {
 	fmt.Println("  down			Roll back the version by 1")
 	fmt.Println("  redo			Roll back the most recently applied migration, then run it again")
 	fmt.Println("  status		Print the status of all migrations")
-}
-
-func createMigrationFile(name string) error {
-	timestamp := time.Now().Format(timeFormat)
-	filename := fmt.Sprintf("%s_%s.sql", timestamp, name)
-	filepath := filepath.Join(dir, filename)
-
-	file, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	templateContent := `-- +goose Up
-
--- +goose Down
-
-`
-	tmpl, err := template.New("migration").Parse(templateContent)
-	if err != nil {
-		return err
-	}
-
-	return tmpl.Execute(file, nil)
 }

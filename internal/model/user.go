@@ -17,11 +17,16 @@ type User struct {
 }
 
 type UserCreateRequest struct {
-	FullName string `json:"fullName" db:"full_name"`
-	Email    string `json:"email" db:"email"`
-	Password string `json:"password" db:"password_hash"`
+	FullName string `json:"fullName"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type UserGetByIdRequest struct {
 	Id uuid.UUID
+}
+
+type UserLoginRequest struct {
+	Email    string `json:"email" default:"admin@gmail.com"`
+	Password string `json:"password" default:"admin"`
 }

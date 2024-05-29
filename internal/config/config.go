@@ -27,12 +27,7 @@ type Config struct {
 	JWTExpired int
 	JWTIssuer  string
 
-	OTPEmail    string
-	OTPPassword string
-
-	REDISHost     string
-	REDISPassword string
-	REDISExpired  int
+	HashKey string
 }
 
 func GetConfig() *Config {
@@ -50,12 +45,7 @@ func GetConfig() *Config {
 			JWTExpired: cast.ToInt(getOrReturnDefault("JWT_EXPIRED", "")),
 			JWTIssuer:  cast.ToString(getOrReturnDefault("JWT_ISSUER", "")),
 
-			OTPEmail:    cast.ToString(getOrReturnDefault("OTP_EMAIL", "")),
-			OTPPassword: cast.ToString(getOrReturnDefault("OTP_PASSWORD", "")),
-
-			REDISHost:     cast.ToString(getOrReturnDefault("REDIS_HOST", "")),
-			REDISPassword: cast.ToString(getOrReturnDefault("REDIS_PASS", "")),
-			REDISExpired:  cast.ToInt(getOrReturnDefault("REDIS_EXPIRED", "")),
+			HashKey: cast.ToString(getOrReturnDefault("HASH_KEY", "")),
 		}
 	})
 	return instance

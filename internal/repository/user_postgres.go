@@ -26,9 +26,13 @@ func (r *UserPostgres) Create(request model.UserCreateRequest) (id uuid.UUID, er
 		full_name,
 		email,
 		password_hash
-	) VALUES (:full_name, :email, :password_hash) RETURNING id;`
+	) VALUES ($1, $2, $3) RETURNING id;`
 
-	if err = r.db.Get(&id, insertQuery, request); err != nil {
+	if err = r.db.Get(&id, insertQuery,
+		request.FullName,
+		request.Email,
+		request.Password,
+	); err != nil {
 		r.log.Error(err)
 		return uuid.Nil, err
 	}
@@ -51,6 +55,29 @@ func (r *UserPostgres) GetById(request model.UserGetByIdRequest) (user model.Use
 	    AND deleted_at IS NULL;`
 
 	if err = r.db.Get(&user, selectQuery, request.Id); err != nil {
+		r.log.Error(err)
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (r *UserPostgres) GetByEmailAndPassword(email string, password string) (user model.User, err error) {
+	selectQuery := `
+	SELECT 
+	    id,
+	    full_name,
+	    email,
+	    created_at,
+	    updated_at
+	FROM 
+	    users
+	WHERE 
+	    email = $1 
+		AND password_hash = $2
+	    AND deleted_at IS NULL;`
+
+	if err = r.db.Get(&user, selectQuery, email, password); err != nil {
 		r.log.Error(err)
 		return user, err
 	}

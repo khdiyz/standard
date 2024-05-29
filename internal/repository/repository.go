@@ -21,4 +21,5 @@ func NewRepository(db *sqlx.DB, log *logger.Logger) *Repository {
 type UserI interface {
 	Create(request model.UserCreateRequest) (id uuid.UUID, err error)
 	GetById(request model.UserGetByIdRequest) (user model.User, err error)
+	GetByEmailAndPassword(email string, password string) (user model.User, err error)
 }

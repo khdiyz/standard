@@ -9,5 +9,13 @@ CREATE TABLE IF NOT EXISTS "users" (
     "deleted_at" TIMESTAMP NULL
 );
 
+INSERT INTO "users" (
+    "full_name","email","password_hash"
+) VALUES (
+    'Super Admin', 
+    'admin@gmail.com', 
+    '686a717268343631376149415337333951576a6668616a73d033e22ae348aeb5660fc2140aec35850c4da997'
+);
+
 -- +goose Down
 DROP TABLE IF EXISTS "users";

@@ -1,0 +1,66 @@
+basePath: /
+definitions:
+  handler.baseResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        type: boolean
+    type: object
+  model.UserLoginRequest:
+    properties:
+      email:
+        default: admin@gmail.com
+        type: string
+      password:
+        default: admin
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API Server for Application
+  title: Simple App API
+  version: "1.0"
+paths:
+  /api/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login User
+      parameters:
+      - description: Login
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.baseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.baseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.baseResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.baseResponse'
+      summary: Login User
+      tags:
+      - Auth
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
